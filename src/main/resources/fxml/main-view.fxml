@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.generator.ui.controller.MainController">
+    <top>
+        <VBox spacing="8">
+            <padding>
+                <Insets top="12" right="12" bottom="8" left="12"/>
+            </padding>
+            <Label text="MyBatis-Plus 交互代码生成器" styleClass="title-label"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label text="数据源"/>
+                <ComboBox fx:id="dataSourceCombo" prefWidth="220" onAction="#onDataSourceSelected"/>
+                <Button text="新建" onAction="#onNewDataSource"/>
+                <Button text="保存" onAction="#onSaveDataSource"/>
+                <Button text="删除" onAction="#onDeleteDataSource"/>
+                <Button text="测试连接" onAction="#onTestConnection"/>
+                <Button text="加载表" onAction="#onLoadTables"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="配置方案"/>
+                <TextField fx:id="profileNameField" prefWidth="120" promptText="方案名称"/>
+                <ComboBox fx:id="profileCombo" prefWidth="180" onAction="#onProfileSelected"/>
+                <Button text="新建方案" onAction="#onNewProfile"/>
+                <Button text="保存方案" onAction="#onSaveProfile"/>
+                <Button text="删除方案" onAction="#onDeleteProfile"/>
+                <Button text="导入" onAction="#onImportProfile"/>
+                <Button text="导出" onAction="#onExportProfile"/>
+            </HBox>
+            <GridPane hgap="10" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="12"/>
+                    <ColumnConstraints percentWidth="20"/>
+                    <ColumnConstraints percentWidth="12"/>
+                    <ColumnConstraints percentWidth="20"/>
+                    <ColumnConstraints percentWidth="12"/>
+                    <ColumnConstraints percentWidth="24"/>
+                </columnConstraints>
+                <Label text="名称" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="dsNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                <Label text="类型" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <ComboBox fx:id="dbTypeCombo" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                <Label text="Schema" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+                <TextField fx:id="schemaField" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+
+                <Label text="Host" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="hostField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <Label text="Port" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <TextField fx:id="portField" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                <Label text="Database" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
+                <TextField fx:id="databaseField" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
+
+                <Label text="用户名" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                <Label text="密码" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                <PasswordField fx:id="passwordField" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                <CheckBox fx:id="savePasswordCheck" text="保存密码(本地)" GridPane.columnIndex="4" GridPane.rowIndex="2"
+                          GridPane.columnSpan="2"/>
+                <Label text="JDBC URL" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <TextField fx:id="jdbcUrlField" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="5"
+                           promptText="留空则按 Host/Port/Database 自动拼接"/>
+            </GridPane>
+        </VBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.28, 0.58">
+            <VBox spacing="8">
+                <padding>
+                    <Insets top="8" right="8" bottom="8" left="12"/>
+                </padding>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="数据表"/>
+                    <TextField fx:id="tableFilterField" promptText="搜索表名..." HBox.hgrow="ALWAYS"
+                               onKeyReleased="#onTableFilterChanged"/>
+                    <Button text="全选" onAction="#onSelectAllTables"/>
+                    <Button text="反选" onAction="#onInvertTables"/>
+                </HBox>
+                <ListView fx:id="tableListView" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <padding>
+                    <Insets top="8" right="8" bottom="8" left="8"/>
+                </padding>
+                <Label text="字段预览"/>
+                <TableView fx:id="columnTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colNameColumn" text="列名" prefWidth="120"/>
+                        <TableColumn fx:id="colTypeColumn" text="类型" prefWidth="100"/>
+                        <TableColumn fx:id="colSizeColumn" text="长度" prefWidth="60"/>
+                        <TableColumn fx:id="colNullableColumn" text="可空" prefWidth="50"/>
+                        <TableColumn fx:id="colPkColumn" text="主键" prefWidth="50"/>
+                        <TableColumn fx:id="colCommentColumn" text="注释" prefWidth="180"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <TabPane tabClosingPolicy="UNAVAILABLE">
+                <Tab text="全局配置">
+                    <ScrollPane fitToWidth="true">
+                        <GridPane hgap="10" vgap="10">
+                            <padding>
+                                <Insets top="12" right="12" bottom="12" left="12"/>
+                            </padding>
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="25"/>
+                                <ColumnConstraints percentWidth="75"/>
+                            </columnConstraints>
+                            <Label text="作者" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <TextField fx:id="authorField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            <Label text="输出目录" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                            <HBox spacing="8" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                                <TextField fx:id="outputDirField" HBox.hgrow="ALWAYS"/>
+                                <Button text="浏览" onAction="#onBrowseOutputDir"/>
+                            </HBox>
+                            <Label text="日期类型" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <ComboBox fx:id="dateTypeCombo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            <Label text="注释日期格式" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                            <TextField fx:id="commentDateField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <CheckBox fx:id="enableSwaggerCheck" text="启用 Swagger" GridPane.rowIndex="4"
+                                      GridPane.columnIndex="1"/>
+                            <CheckBox fx:id="disableOpenDirCheck" text="禁用自动打开目录" GridPane.rowIndex="5"
+                                      GridPane.columnIndex="1"/>
+                            <CheckBox fx:id="enableKotlinCheck" text="启用 Kotlin" GridPane.rowIndex="6"
+                                      GridPane.columnIndex="1"/>
+                            <CheckBox fx:id="enableAllFileOverrideCheck" text="覆盖已存在的生成文件（Entity/Mapper/Service/Controller）"
+                                      GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                        </GridPane>
+                    </ScrollPane>
+                </Tab>
+                <Tab text="包配置">
+                    <ScrollPane fitToWidth="true">
+                        <GridPane hgap="10" vgap="10">
+                            <padding>
+                                <Insets top="12" right="12" bottom="12" left="12"/>
+                            </padding>
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="25"/>
+                                <ColumnConstraints percentWidth="75"/>
+                            </columnConstraints>
+                            <Label text="父包名" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <TextField fx:id="parentPackageField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            <Label text="模块名" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                            <TextField fx:id="moduleNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            <Label text="Entity" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <TextField fx:id="entityPackageField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            <Label text="Service" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                            <TextField fx:id="servicePackageField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <Label text="ServiceImpl" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                            <TextField fx:id="serviceImplPackageField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                            <Label text="Mapper" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                            <TextField fx:id="mapperPackageField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                            <Label text="Controller" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                            <TextField fx:id="controllerPackageField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                            <Label text="Mapper XML" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                            <TextField fx:id="xmlPackageField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                            <Label text="XML 输出路径" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                            <HBox spacing="8" GridPane.rowIndex="8" GridPane.columnIndex="1">
+                                <TextField fx:id="mapperXmlPathField" HBox.hgrow="ALWAYS"/>
+                                <Button text="浏览" onAction="#onBrowseMapperXmlPath"/>
+                            </HBox>
+                        </GridPane>
+                    </ScrollPane>
+                </Tab>
+                <Tab text="策略配置">
+                    <ScrollPane fitToWidth="true">
+                        <VBox spacing="12">
+                            <padding>
+                                <Insets top="12" right="12" bottom="12" left="12"/>
+                            </padding>
+                            <GridPane hgap="10" vgap="8">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="25"/>
+                                    <ColumnConstraints percentWidth="75"/>
+                                </columnConstraints>
+                                <Label text="表前缀(逗号分隔)" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tablePrefixField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="表后缀" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tableSuffixField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="排除表" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="excludeTablesField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <Label text="主键策略" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="idTypeCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                <Label text="命名策略" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="namingStrategyCombo" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                            </GridPane>
+                            <TitledPane text="Entity" expanded="true">
+                                <VBox spacing="6">
+                                    <CheckBox fx:id="enableLombokCheck" text="Lombok"/>
+                                    <CheckBox fx:id="enableTableFieldAnnotationCheck" text="TableField 注解"/>
+                                    <CheckBox fx:id="enableChainModelCheck" text="链式模型"/>
+                                    <CheckBox fx:id="entityFileOverrideCheck" text="覆盖已有 Entity"/>
+                                    <HBox spacing="8">
+                                        <Label text="逻辑删除列"/>
+                                        <TextField fx:id="logicDeleteField" HBox.hgrow="ALWAYS"/>
+                                    </HBox>
+                                    <HBox spacing="8">
+                                        <Label text="乐观锁列"/>
+                                        <TextField fx:id="versionColumnField" HBox.hgrow="ALWAYS"/>
+                                    </HBox>
+                                </VBox>
+                            </TitledPane>
+                            <TitledPane text="Controller / Mapper / Service" expanded="true">
+                                <VBox spacing="6">
+                                    <CheckBox fx:id="controllerRestStyleCheck" text="RestController"/>
+                                    <CheckBox fx:id="controllerHyphenStyleCheck" text="URL 驼峰转连字符"/>
+                                    <CheckBox fx:id="mapperAnnotationCheck" text="@Mapper"/>
+                                    <CheckBox fx:id="mapperBaseResultMapCheck" text="BaseResultMap"/>
+                                    <CheckBox fx:id="mapperBaseColumnListCheck" text="BaseColumnList"/>
+                                    <CheckBox fx:id="controllerFileOverrideCheck" text="覆盖已有 Controller"/>
+                                    <CheckBox fx:id="mapperFileOverrideCheck" text="覆盖已有 Mapper / XML"/>
+                                    <CheckBox fx:id="serviceFileOverrideCheck" text="覆盖已有 Service"/>
+                                    <CheckBox fx:id="disableControllerCheck" text="禁用 Controller"/>
+                                    <CheckBox fx:id="disableServiceCheck" text="禁用 Service"/>
+                                    <CheckBox fx:id="disableMapperCheck" text="禁用 Mapper"/>
+                                </VBox>
+                            </TitledPane>
+                        </VBox>
+                    </ScrollPane>
+                </Tab>
+                <Tab text="模板与注入">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Label text="模板引擎"/>
+                            <ComboBox fx:id="templateEngineCombo" prefWidth="180"/>
+                        </HBox>
+                        <TitledPane text="模板路径覆盖" expanded="true">
+                            <GridPane hgap="8" vgap="8">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="20"/>
+                                    <ColumnConstraints percentWidth="80"/>
+                                </columnConstraints>
+                                <Label text="Entity" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="entityTemplateField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="Mapper" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="mapperTemplateField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="Mapper XML" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="mapperXmlTemplateField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <Label text="Service" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <TextField fx:id="serviceTemplateField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                <Label text="ServiceImpl" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                <TextField fx:id="serviceImplTemplateField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                <Label text="Controller" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                <TextField fx:id="controllerTemplateField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                            </GridPane>
+                        </TitledPane>
+                        <TitledPane text="customMap (模板 \${cfg.key})" expanded="true">
+                            <VBox spacing="8">
+                                <HBox spacing="8">
+                                    <TextField fx:id="customMapKeyField" promptText="key" HBox.hgrow="ALWAYS"/>
+                                    <TextField fx:id="customMapValueField" promptText="value" HBox.hgrow="ALWAYS"/>
+                                    <Button text="添加" onAction="#onAddCustomMap"/>
+                                </HBox>
+                                <ListView fx:id="customMapListView" prefHeight="100"/>
+                                <Button text="删除选中" onAction="#onRemoveCustomMap"/>
+                            </VBox>
+                        </TitledPane>
+                        <TitledPane text="CustomFile 自定义文件" expanded="true">
+                            <VBox spacing="8">
+                                <GridPane hgap="8" vgap="8">
+                                    <columnConstraints>
+                                        <ColumnConstraints percentWidth="20"/>
+                                        <ColumnConstraints percentWidth="80"/>
+                                    </columnConstraints>
+                                    <Label text="文件名" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                    <TextField fx:id="customFileNameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                    <Label text="模板路径" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                    <TextField fx:id="customFileTemplateField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                    <Label text="包名" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                    <TextField fx:id="customFilePackageField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                </GridPane>
+                                <HBox spacing="8">
+                                    <Button text="添加 CustomFile" onAction="#onAddCustomFile"/>
+                                    <Button text="删除选中" onAction="#onRemoveCustomFile"/>
+                                </HBox>
+                                <ListView fx:id="customFileListView" prefHeight="120"/>
+                            </VBox>
+                        </TitledPane>
+                    </VBox>
+                </Tab>
+            </TabPane>
+        </SplitPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="8">
+            <padding>
+                <Insets top="8" right="12" bottom="12" left="12"/>
+            </padding>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Button text="预览配置" onAction="#onPreviewConfig"/>
+                <Button text="生成代码" styleClass="primary-button" onAction="#onGenerate"/>
+                <Button text="打开输出目录" onAction="#onOpenOutputDir"/>
+                <ProgressIndicator fx:id="progressIndicator" visible="false" prefWidth="24" prefHeight="24"/>
+                <Label fx:id="statusLabel" text="就绪"/>
+            </HBox>
+            <SplitPane dividerPositions="0.5" prefHeight="180">
+                <VBox spacing="6">
+                    <Label text="配置预览"/>
+                    <TextArea fx:id="configPreviewArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="生成日志"/>
+                    <TextArea fx:id="logArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </SplitPane>
+            <Label text="生成文件"/>
+            <ListView fx:id="generatedFilesListView" prefHeight="100"/>
+        </VBox>
+    </bottom>
+</BorderPane>

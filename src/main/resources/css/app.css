@@ -1,0 +1,44 @@
+.root {
+    -fx-font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f4f6f8;
+}
+
+.title-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.primary-button {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.tab-pane .tab-header-area .tab {
+    -fx-background-color: #e5e7eb;
+}
+
+.tab-pane .tab-header-area .tab:selected {
+    -fx-background-color: white;
+}
+
+.text-area, .text-field {
+    -fx-background-radius: 4;
+}
+
+.list-view, .table-view {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 4;
+}
+
+.titled-pane > .title {
+    -fx-background-color: #eef2ff;
+    -fx-font-weight: bold;
+}

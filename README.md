@@ -4,23 +4,13 @@
 
 ## 环境要求
 
-- JDK 21+
+- JDK 21+（编译与运行）
 - Maven 3.9+
-- （可选）本地 JavaFX SDK，通过环境变量 `JAVAFX_SDK` 指定 module-path
-
-### JavaFX SDK 环境变量
-
-在系统中设置 `JAVAFX_SDK` 为 SDK **根目录**（本项目默认路径）：
-
-```bat
-setx JAVAFX_SDK "D:\tools\Java\javafx-sdk-21.0.9"
-```
-
-IntelliJ **Launcher** 运行配置的 module-path 为：`D:\tools\Java\javafx-sdk-21.0.9\lib`
+- JDK 24+ 运行时会自动启用 `--enable-native-access=javafx.graphics`（已在 Maven 插件与启动脚本中配置）
 
 ## 运行
 
-推荐方式（自动配置 JavaFX module-path）：
+本项目使用 **JPMS 模块化**（`module-info.java` 声明 JavaFX 等依赖），推荐：
 
 ```bash
 mvn javafx:run
@@ -36,20 +26,25 @@ Windows 也可双击 [`run.bat`](run.bat) 或执行：
 
 **方式 1（推荐）**：使用预置运行配置 **GeneratorApp (Maven)**，执行 `javafx:run`。
 
-**方式 2**：运行 **Launcher** 运行配置（已配置本地 SDK）：
+**方式 2**：使用预置运行配置 **Launcher**（模块化主类 `com.example.generator.ui/com.example.generator.ui.app.Launcher`）。
 
-```
---module-path "D:/tools/Java/javafx-sdk-21.0.9/lib"
---add-modules javafx.controls,javafx.fxml
-```
+> 模块化后 IntelliJ 会自动解析 module-path，无需手动配置 `--module-path` / `--add-modules`。
 
-> 不要直接运行 `GeneratorApp`。Java 11+ 已不包含 JavaFX，必须通过 module-path 或 Maven 插件启动。
+### 模块说明
 
-### 常见错误
+主模块 `com.example.generator.ui` 在 [`module-info.java`](src/main/java/module-info.java) 中声明：
 
-| 错误 | 解决 |
-|------|------|
-| `缺少 JavaFX 运行时组件` | 使用 `mvn javafx:run` 或 **GeneratorApp (Maven)** 运行配置 |
+- `requires javafx.controls`、`requires javafx.fxml` — JavaFX 依赖
+- `opens ...controller to javafx.fxml` — FXML 反射注入
+- `opens ...dto to com.fasterxml.jackson.databind` — JSON 序列化
+
+### 常见警告与解决
+
+| 警告 | 原因 | 解决 |
+|------|------|------|
+| `Unsupported JavaFX configuration: classes were loaded from 'unnamed module'` | 未使用模块化启动 | 使用 `mvn javafx:run`、`run.ps1` 或预置 **Launcher** 配置 |
+| `Use --enable-native-access=...` | JDK 24+ 限制 native 调用 | 已在 Maven 插件与启动脚本中配置 |
+| `sun.misc.Unsafe::allocateMemory` | JavaFX 21 在 JDK 24+ 上的兼容性提示，不影响使用 | 可忽略；或升级 JavaFX 至 25 并使用 JDK 23+ 编译 |
 
 ## 功能概览
 
@@ -114,7 +109,9 @@ Windows 也可双击 [`run.bat`](run.bat) 或执行：
 ## 项目结构
 
 ```
-src/main/java/com/example/generator/ui/
+src/main/java/
+  module-info.java   JPMS 模块定义（JavaFX、Jackson、MyBatis-Plus 等）
+  com/example/generator/ui/
   app/          应用入口
   controller/   FXML 控制器
   dto/          配置与元数据模型

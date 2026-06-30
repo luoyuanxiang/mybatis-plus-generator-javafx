@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
         <javafx.version>21.0.9</javafx.version>
+        <javafx.vm.options>--enable-native-access=javafx.graphics</javafx.vm.options>
         <mybatis-plus-generator.version>3.5.15</mybatis-plus-generator.version>
         <jackson.version>2.18.2</jackson.version>
         <maven.compiler.release>21</maven.compiler.release>
@@ -112,7 +113,10 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.example.generator.ui.app.Launcher</mainClass>
+                    <mainClass>com.example.generator.ui/com.example.generator.ui.app.Launcher</mainClass>
+                    <options>
+                        <option>${javafx.vm.options}</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>

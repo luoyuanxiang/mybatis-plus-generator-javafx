@@ -1,3 +1,4 @@
 @echo off
 cd /d "%~dp0"
-mvn -q javafx:run
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run.ps1"
+exit /b %ERRORLEVEL%

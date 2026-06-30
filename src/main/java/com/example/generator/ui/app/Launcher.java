@@ -3,10 +3,10 @@ package com.example.generator.ui.app;
 import javafx.application.Application;
 
 /**
- * JavaFX 启动入口。
+ * JavaFX 启动入口（JPMS 模块化应用）。
  * <p>
- * IntelliJ：使用 {@code Launcher} 运行配置，module-path 为 {@code D:/tools/Java/javafx-sdk-21.0.9/lib}。
- * Maven：{@code mvn javafx:run}。
+ * 模块：{@code com.example.generator.ui}，见 {@code module-info.java}。
+ * 推荐 {@code mvn javafx:run} 或 {@code .\run.ps1}。
  */
 public final class Launcher {
 

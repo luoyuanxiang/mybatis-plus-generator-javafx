@@ -1,4 +1,13 @@
+/**
+ * JPMS 模块描述：MyBatis-Plus Generator JavaFX 桌面应用。
+ * <p>
+ * 声明 JavaFX、Jackson、MyBatis-Plus、JDBC 驱动等运行时依赖，
+ * 并对 FXML/Jackson 反射所需的包执行 {@code opens}。
+ * </p>
+ */
 module com.example.generator.ui {
+    requires static lombok;
+
     requires javafx.controls;
     requires javafx.fxml;
     requires java.desktop;
@@ -22,6 +31,7 @@ module com.example.generator.ui {
     requires com.microsoft.sqlserver.jdbc;
     requires com.oracle.database.jdbc;
     requires com.h2database;
+    requires org.mybatis;
 
     opens com.example.generator.ui.controller to javafx.fxml;
     opens com.example.generator.ui.dto to com.fasterxml.jackson.databind;

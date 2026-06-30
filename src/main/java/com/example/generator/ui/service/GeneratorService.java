@@ -8,17 +8,10 @@ import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.AbstractTemplateEngine;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 import com.baomidou.mybatisplus.generator.engine.VelocityTemplateEngine;
-import com.example.generator.ui.dto.CustomFileDto;
-import com.example.generator.ui.dto.DataSourceConfigDto;
-import com.example.generator.ui.dto.GenerationResult;
-import com.example.generator.ui.dto.GeneratorProfile;
-import com.example.generator.ui.dto.GlobalConfigDto;
-import com.example.generator.ui.dto.InjectionConfigDto;
-import com.example.generator.ui.dto.PackageConfigDto;
-import com.example.generator.ui.dto.StrategyConfigDto;
+import com.example.generator.ui.dto.*;
 import com.example.generator.ui.util.JdbcUrlBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,23 +19,40 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * MyBatis-Plus 代码生成核心服务。
+ * <p>
+ * 将 UI 配置（{@link GeneratorProfile}）映射为 {@link FastAutoGenerator} 链式调用，
+ * 支持 Global/Package/Strategy/Injection 全量配置，并通过 {@link #setLogConsumer} 将
+ * 生成过程日志实时推送至界面。
+ * </p>
+ */
+@Slf4j
 public class GeneratorService {
 
-    private static final Logger log = LoggerFactory.getLogger(GeneratorService.class);
-
+    /** UI 日志回调，默认空操作。 */
     private Consumer<String> logConsumer = message -> {
     };
+
+    /** 本次生成已处理的表/文件记录（线程安全）。 */
     private final List<String> generatedFiles = Collections.synchronizedList(new ArrayList<>());
+
+    /** 本次生成因未开启覆盖而跳过的文件（线程安全）。 */
     private final List<String> skippedFiles = Collections.synchronizedList(new ArrayList<>());
 
+    /**
+     * 设置 UI 日志消费者。
+     *
+     * @param logConsumer 接收日志行的回调，null 时使用空操作
+     */
     public void setLogConsumer(Consumer<String> logConsumer) {
         this.logConsumer = logConsumer == null ? message -> {
         } : logConsumer;
     }
 
+    /** 外部直接推送一行日志（如手动提示信息）。 */
     public void handleLog(String message) {
         emitLog(message);
     }
@@ -70,6 +80,13 @@ public class GeneratorService {
         return message;
     }
 
+    /**
+     * 执行代码生成。
+     *
+     * @param dataSource 当前选中的数据源，不可为 null
+     * @param profile    生成配置方案，须包含至少一张选中的表
+     * @return 成功或失败的 {@link GenerationResult}
+     */
     public GenerationResult generate(DataSourceConfigDto dataSource, GeneratorProfile profile) {
         if (dataSource == null) {
             return GenerationResult.failure("Please select a data source.");
@@ -117,6 +134,7 @@ public class GeneratorService {
         }
     }
 
+    /** 映射 {@link GlobalConfigDto} 至 FastAutoGenerator GlobalConfig.Builder。 */
     private void applyGlobal(com.baomidou.mybatisplus.generator.config.GlobalConfig.Builder builder,
                              GlobalConfigDto global) {
         builder.author(global.getAuthor())
@@ -134,6 +152,7 @@ public class GeneratorService {
         builder.dateType(parseDateType(global.getDateType()));
     }
 
+    /** 映射 {@link PackageConfigDto} 至 PackageConfig.Builder。 */
     private void applyPackage(com.baomidou.mybatisplus.generator.config.PackageConfig.Builder builder,
                               PackageConfigDto pkg) {
         builder.parent(pkg.getParent());
@@ -151,6 +170,7 @@ public class GeneratorService {
         }
     }
 
+    /** 映射 {@link StrategyConfigDto} 至 StrategyConfig.Builder（Entity/Mapper/Service/Controller）。 */
     private void applyStrategy(com.baomidou.mybatisplus.generator.config.StrategyConfig.Builder builder,
                                GeneratorProfile profile) {
         StrategyConfigDto strategy = profile.getStrategyConfig();
@@ -233,7 +253,7 @@ public class GeneratorService {
             mapperBuilder.disable();
         } else {
             if (strategy.isMapperAnnotation()) {
-                mapperBuilder.enableMapperAnnotation();
+                mapperBuilder.mapperAnnotation(Mapper.class);
             }
             if (strategy.isMapperBaseResultMap()) {
                 mapperBuilder.enableBaseResultMap();
@@ -268,6 +288,7 @@ public class GeneratorService {
         }
     }
 
+    /** 映射 {@link InjectionConfigDto} 至 InjectionConfig.Builder，并注册生成进度回调。 */
     private void applyInjection(com.baomidou.mybatisplus.generator.config.InjectionConfig.Builder builder,
                                 InjectionConfigDto injection,
                                 Consumer<String> consumer) {
@@ -291,6 +312,7 @@ public class GeneratorService {
         });
     }
 
+    /** 根据配置创建 Freemarker 或 Velocity 模板引擎实例。 */
     private AbstractTemplateEngine createTemplateEngine(InjectionConfigDto injection) {
         String engine = injection.getTemplateEngine() == null ? "FREEMARKER" : injection.getTemplateEngine();
         return switch (engine.toUpperCase()) {

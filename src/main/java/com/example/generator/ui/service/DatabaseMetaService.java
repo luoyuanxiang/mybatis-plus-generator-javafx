@@ -15,12 +15,28 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * 数据库元数据读取服务。
+ * <p>
+ * 基于 JDBC {@link DatabaseMetaData} 获取表列表与列详情，
+ * 供 UI 表选择器与字段预览使用。不同数据库的 catalog/schema 解析逻辑各异。
+ * </p>
+ */
 public class DatabaseMetaService {
 
+    /**
+     * 测试数据源连通性，委托 {@link JdbcConnectionUtil#testConnection}。
+     */
     public void testConnection(DataSourceConfigDto config) throws Exception {
         JdbcConnectionUtil.testConnection(config);
     }
 
+    /**
+     * 列出数据源中所有表和视图。
+     *
+     * @param config 数据源配置
+     * @return 按表名排序的 {@link TableMeta} 列表
+     */
     public List<TableMeta> listTables(DataSourceConfigDto config) throws Exception {
         try (Connection connection = JdbcConnectionUtil.openConnection(config)) {
             DatabaseMetaData metaData = connection.getMetaData();
@@ -39,11 +55,18 @@ public class DatabaseMetaService {
                     }
                 }
             }
-            tables.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+            tables.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
             return tables;
         }
     }
 
+    /**
+     * 列出指定表的所有列信息，含主键标记。
+     *
+     * @param config    数据源配置
+     * @param tableName 表名
+     * @return 列元数据列表，顺序与 JDBC 驱动返回一致
+     */
     public List<ColumnMeta> listColumns(DataSourceConfigDto config, String tableName) throws Exception {
         try (Connection connection = JdbcConnectionUtil.openConnection(config)) {
             DatabaseMetaData metaData = connection.getMetaData();
@@ -75,6 +98,7 @@ public class DatabaseMetaService {
         }
     }
 
+    /** 读取表的主键列名集合。 */
     private Set<String> loadPrimaryKeys(DatabaseMetaData metaData, String catalog, String schema, String tableName)
             throws Exception {
         Set<String> keys = new HashSet<>();
@@ -86,6 +110,10 @@ public class DatabaseMetaService {
         return keys;
     }
 
+    /**
+     * 解析 JDBC catalog。
+     * MySQL 使用 database 名作为 catalog，其他数据库使用连接的 catalog。
+     */
     private String resolveCatalog(Connection connection, DataSourceConfigDto config) throws Exception {
         if (config.getDbType() == DatabaseType.MYSQL) {
             return config.getDatabase();
@@ -93,6 +121,10 @@ public class DatabaseMetaService {
         return connection.getCatalog();
     }
 
+    /**
+     * 解析 JDBC schema。
+     * 优先使用配置中的 schema 字段，否则按数据库类型返回默认值。
+     */
     private String resolveSchema(DataSourceConfigDto config) {
         if (config.getSchema() != null && !config.getSchema().isBlank()) {
             return config.getSchema();

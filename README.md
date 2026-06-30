@@ -126,6 +126,7 @@ src/main/resources/
 ## 技术栈
 
 - Java 21 + JavaFX 21
+- Lombok（DTO 与工具类）
 - MyBatis-Plus Generator 3.5.15
 - Freemarker 模板引擎
 - Jackson JSON 持久化

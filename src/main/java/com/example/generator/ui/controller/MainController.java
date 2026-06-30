@@ -42,6 +42,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import lombok.Setter;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -53,6 +54,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * 主界面 FXML 控制器。
+ * <p>
+ * 绑定 {@code main-view.fxml} 中所有 UI 控件，协调以下功能模块：
+ * </p>
+ * <ul>
+ *   <li><b>数据源管理</b> — 增删改查、连接测试、表单与 {@link DataSourceRepository} 同步</li>
+ *   <li><b>表与字段</b> — 加载表列表、搜索/全选、字段预览</li>
+ *   <li><b>配置方案</b> — Profile 保存/加载/导入导出，绑定 Global/Package/Strategy/Injection 表单</li>
+ *   <li><b>代码生成</b> — 后台 {@link Task} 调用 {@link GeneratorService}，日志输出至 TextArea</li>
+ * </ul>
+ * <p>
+ * 耗时操作均在 JavaFX {@link Task} 中执行，通过 {@link Platform#runLater} 更新 UI，避免阻塞事件线程。
+ * </p>
+ */
 public class MainController {
 
     @FXML private ComboBox<DataSourceConfigDto> dataSourceCombo;
@@ -142,6 +158,7 @@ public class MainController {
     @FXML private ProgressIndicator progressIndicator;
     @FXML private Label statusLabel;
 
+    @Setter
     private Stage stage;
     private final DataSourceRepository dataSourceRepository = new DataSourceRepository();
     private final DatabaseMetaService databaseMetaService = new DatabaseMetaService();
@@ -156,10 +173,6 @@ public class MainController {
     private DataSourceConfigDto currentDataSource;
     private GeneratorProfile currentProfile;
     private boolean suppressProfileLoad;
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
 
     @FXML
     public void initialize() {
@@ -225,9 +238,9 @@ public class MainController {
         colTypeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         colSizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
         colNullableColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
-                cell.getValue().isNullable() ? "Y" : "N"));
+                cell.getValue().nullable() ? "Y" : "N"));
         colPkColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
-                cell.getValue().isPrimaryKey() ? "Y" : "N"));
+                cell.getValue().primaryKey() ? "Y" : "N"));
         colCommentColumn.setCellValueFactory(new PropertyValueFactory<>("comment"));
 
         customFileListView.setItems(customFiles);
@@ -567,24 +580,24 @@ public class MainController {
         task.setOnSucceeded(e -> {
             progressIndicator.setVisible(false);
             GenerationResult result = task.getValue();
-            if (result.isSuccess()) {
-                List<String> displayItems = new ArrayList<>(result.getGeneratedFiles());
+            if (result.success()) {
+                List<String> displayItems = new ArrayList<>(result.generatedFiles());
                 if (result.hasSkippedFiles()) {
                     displayItems.add("--- Skipped (enable file override to overwrite) ---");
-                    displayItems.addAll(result.getSkippedFiles());
+                    displayItems.addAll(result.skippedFiles());
                 }
                 generatedFilesListView.setItems(FXCollections.observableArrayList(displayItems));
-                setStatus(result.getMessage());
+                setStatus(result.message());
                 if (result.hasSkippedFiles()) {
                     new Alert(Alert.AlertType.WARNING,
-                            result.getSkippedFiles().size() + " file(s) already exist and were skipped.\n"
-                                    + "Example: " + result.getSkippedFiles().get(0) + "\n\n"
+                            result.skippedFiles().size() + " file(s) already exist and were skipped.\n"
+                                    + "Example: " + result.skippedFiles().get(0) + "\n\n"
                                     + "Go to Global Config and enable:\n"
                                     + "覆盖已存在的生成文件（Entity/Mapper/Service/Controller）",
                             ButtonType.OK).showAndWait();
                 }
             } else {
-                showError(result.getMessage());
+                showError(result.message());
                 setStatus("Generation failed.");
             }
         });
@@ -809,8 +822,8 @@ public class MainController {
     private void populateTables(List<TableMeta> tables) {
         allTableItems.clear();
         for (TableMeta table : tables) {
-            CheckBox checkBox = new CheckBox(table.getName() + (table.getComment().isBlank() ? "" : " - " + table.getComment()));
-            allTableItems.add(new CheckBoxTableItem(table.getName(), checkBox));
+            CheckBox checkBox = new CheckBox(table.name() + (table.comment().isBlank() ? "" : " - " + table.comment()));
+            allTableItems.add(new CheckBoxTableItem(table.name(), checkBox));
         }
         applyTableFilter();
     }

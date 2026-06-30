@@ -2,12 +2,24 @@ package com.example.generator.ui.util;
 
 import com.example.generator.ui.dto.DataSourceConfigDto;
 import com.example.generator.ui.dto.DatabaseType;
+import lombok.experimental.UtilityClass;
 
-public final class JdbcUrlBuilder {
+/**
+ * JDBC 连接 URL 构建工具。
+ * <p>
+ * 当 {@link DataSourceConfigDto#getJdbcUrl()} 已填写时直接返回；
+ * 否则根据 {@link DatabaseType} 使用各数据库的标准 URL 模板拼装。
+ * </p>
+ */
+@UtilityClass
+public class JdbcUrlBuilder {
 
-    private JdbcUrlBuilder() {
-    }
-
+    /**
+     * 根据数据源配置构建最终 JDBC URL。
+     *
+     * @param config 数据源配置，不可为 null
+     * @return 可用于 {@link java.sql.DriverManager#getConnection} 的 URL
+     */
     public static String buildUrl(DataSourceConfigDto config) {
         if (config.getJdbcUrl() != null && !config.getJdbcUrl().isBlank()) {
             return config.getJdbcUrl().trim();
@@ -19,7 +31,8 @@ public final class JdbcUrlBuilder {
                     config.getHost(),
                     config.getPort(),
                     config.getDatabase(),
-                    defaultParams(config.getJdbcParams(), "useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai")
+                    defaultParams(config.getJdbcParams(),
+                            "useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai")
             );
             case POSTGRESQL -> String.format(
                     "jdbc:postgresql://%s:%d/%s",
@@ -45,6 +58,7 @@ public final class JdbcUrlBuilder {
         };
     }
 
+    /** 连接参数为空时使用默认值。 */
     private static String defaultParams(String params, String fallback) {
         return params == null || params.isBlank() ? fallback : params.trim();
     }

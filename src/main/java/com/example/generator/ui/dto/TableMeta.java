@@ -1,26 +1,20 @@
 package com.example.generator.ui.dto;
 
-public class TableMeta {
+import com.example.generator.ui.service.DatabaseMetaService;
 
-    private final String name;
-    private final String comment;
-    private final String type;
+import java.sql.DatabaseMetaData;
 
-    public TableMeta(String name, String comment, String type) {
-        this.name = name;
-        this.comment = comment;
-        this.type = type;
-    }
+/**
+ * 数据库表元数据，用于 UI 表列表展示。
+ * <p>
+ * 由 {@link DatabaseMetaService#listTables} 通过
+ * JDBC {@link DatabaseMetaData#getTables} 读取。
+ * </p>
+ *
+ * @param name    表名。
+ * @param comment 表注释（{@code REMARKS}）。
+ * @param type    表类型，如 {@code TABLE}、{@code VIEW}。
+ */
+public record TableMeta(String name, String comment, String type) {
 
-    public String getName() {
-        return name;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public String getType() {
-        return type;
-    }
 }

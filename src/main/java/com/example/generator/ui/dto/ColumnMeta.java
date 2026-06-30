@@ -1,51 +1,25 @@
 package com.example.generator.ui.dto;
 
-public class ColumnMeta {
+import com.example.generator.ui.service.DatabaseMetaService;
 
-    private final String name;
-    private final String type;
-    private final int size;
-    private final boolean nullable;
-    private final boolean primaryKey;
-    private final String comment;
-    private final String defaultValue;
+import java.sql.DatabaseMetaData;
 
-    public ColumnMeta(String name, String type, int size, boolean nullable, boolean primaryKey,
-                      String comment, String defaultValue) {
-        this.name = name;
-        this.type = type;
-        this.size = size;
-        this.nullable = nullable;
-        this.primaryKey = primaryKey;
-        this.comment = comment;
-        this.defaultValue = defaultValue;
-    }
+/**
+ * 数据库列元数据，用于 UI 字段预览表格展示。
+ * <p>
+ * 由 {@link DatabaseMetaService#listColumns} 通过
+ * JDBC {@link DatabaseMetaData#getColumns} 读取。
+ * </p>
+ *
+ * @param name         列名。
+ * @param type         JDBC 类型名，如 {@code VARCHAR}、{@code BIGINT}。
+ * @param size         列长度/精度（{@code COLUMN_SIZE}）。
+ * @param nullable     是否允许 NULL。
+ * @param primaryKey   是否为主键列。
+ * @param comment      列注释（{@code REMARKS}）。
+ * @param defaultValue 默认值（{@code COLUMN_DEF}）。
+ */
+public record ColumnMeta(String name, String type, int size, boolean nullable, boolean primaryKey, String comment,
+                         String defaultValue) {
 
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public boolean isNullable() {
-        return nullable;
-    }
-
-    public boolean isPrimaryKey() {
-        return primaryKey;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
 }
